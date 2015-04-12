@@ -92,7 +92,7 @@ public:
 	static uint32_t TimeStringToXID6Ticks(const std::string & str, bool * p_valid_format);
 
 	static std::string ID666IdToEmulatorName(ID666EmulatorId id);
-	static ID666EmulatorId EmulatorNameToID666Id(const char * name);
+	static ID666EmulatorId EmulatorNameToID666Id(const std::string & name);
 
 	bool ImportPSFTag(const std::map<std::string, std::string> & psf_tags);
 	std::map<std::string, std::string> ExportPSFTag(bool unofficial_tags) const;

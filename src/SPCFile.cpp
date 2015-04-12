@@ -834,24 +834,24 @@ std::string SPCFile::ID666IdToEmulatorName(SPCFile::ID666EmulatorId id)
 	}
 }
 
-SPCFile::ID666EmulatorId SPCFile::EmulatorNameToID666Id(const char * name)
+SPCFile::ID666EmulatorId SPCFile::EmulatorNameToID666Id(const std::string & name)
 {
-	if (strcasecmp(name, "ZSNES") == 0) {
+	if (strcasecmp(name.c_str(), "ZSNES") == 0) {
 		return ID666_EMU_ZSNES;
 	}
-	else if (strcasecmp(name, "Snes9x") == 0) {
+	else if (strcasecmp(name.c_str(), "Snes9x") == 0) {
 		return ID666_EMU_SNES9X;
 	}
-	else if (strcasecmp(name, "ZST2SPC") == 0) {
+	else if (strcasecmp(name.c_str(), "ZST2SPC") == 0) {
 		return ID666_EMU_ZST2SPC;
 	}
-	else if (strcasecmp(name, "SNEShout") == 0) {
+	else if (strcasecmp(name.c_str(), "SNEShout") == 0) {
 		return ID666_EMU_SNESHOUT;
 	}
-	else if (strcasecmp(name, "ZSNES/W") == 0) {
+	else if (strcasecmp(name.c_str(), "ZSNES/W") == 0) {
 		return ID666_EMU_ZSNES_W;
 	}
-	else if (strcasecmp(name, "SNESGT") == 0) {
+	else if (strcasecmp(name.c_str(), "SNESGT") == 0) {
 		return ID666_EMU_SNESGT;
 	}
 	else {
@@ -981,8 +981,14 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 					SetLengthTag(XID6_EMULATOR, (uint16_t)num);
 				}
 				else {
-					fprintf(stderr, "Error: Illegal number format: emulator\n");
-					no_error = false;
+					ID666EmulatorId emu_id = EmulatorNameToID666Id(value);
+					if (emu_id != ID666_EMU_UNKNOWN) {
+						SetLengthTag(XID6_EMULATOR, (uint16_t)emu_id);
+					}
+					else {
+						fprintf(stderr, "Error: Unable to parse emulator id/name\n");
+						no_error = false;
+					}
 				}
 			}
 		}
