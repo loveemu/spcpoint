@@ -898,7 +898,7 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 		else if (name == "copyright") {
 			SetStringTag(XID6_PUBLISHER_NAME, value);
 		}
-		else if (name == "snsfby") {
+		else if (name == "snsfby" || name == "spcby") {
 			SetStringTag(XID6_DUMPER_NAME, value);
 		}
 		else if (name == "volume") {
