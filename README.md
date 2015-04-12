@@ -22,6 +22,31 @@ Usage
 `spc-file(s)`
   : One or more SPC filenames.  Wildcards are accepted.
 
+### List of tags
+
+|Tag                    |Description                                                                 |
+|-----------------------|----------------------------------------------------------------------------|
+|title=[string]         |Song name                                                                   |
+|game=[string]          |Game name                                                                   |
+|artist=[string]        |Artist's name                                                               |
+|snsfby=[string]        |Dumper name                                                                 |
+|year=[integer]         |Copyright year                                                              |
+|comment=[string]       |Comments                                                                    |
+|copyright=[string]     |Publisher's name                                                            |
+|volume=[number]        |Amplification value to apply to output (1.0 = normal volume)                |
+|length=[time]          |Song length excluding fadeouts (Note: it will delete all extended timings!) |
+|fade=[time]            |Fade length                                                                 |
+|created_at=[date]      |Date song was dumped                                                        |
+|emulator=[id or name]  |Emulator used                                                               |
+|soundtrack=[string]    |Official soundtrack title                                                   |
+|disc=[integer]         |OST disc                                                                    |
+|track=[integer(+char)] |OST track                                                                   |
+|intro=[time]           |Introduction length                                                         |
+|loop=[time]            |Loop length                                                                 |
+|end=[time]             |End length                                                                  |
+|mute=[integer]         |Muted channels (a bit is set for each channel that's muted)                 |
+|loopcount=[integer]    |Number of times to loop the loop section of the song                        |
+
 Examples
 --------
 
