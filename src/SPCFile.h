@@ -101,8 +101,6 @@ private:
 	SPCFile(const SPCFile&);
 	SPCFile& operator=(const SPCFile&);
 
-	//static bool GuessTypeId(XID6TypeId & type, XID6ItemId id);
-
 	static bool ParseDateString(const std::string & str, int & year, int & month, int & day);
 	void SetTagValue(XID6ItemId id, XID6TypeId type, const uint8_t * binary, size_t size);
 };

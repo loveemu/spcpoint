@@ -1176,42 +1176,6 @@ std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) c
 	return psf_tags;
 }
 
-#if 0
-bool SPCFile::GuessTypeId(XID6TypeId & type, XID6ItemId id)
-{
-	switch (id) {
-	case XID6_OST_DISC:
-	case XID6_OST_TRACK_NUMBER:
-	case XID6_COPYRIGHT_YEAR:
-	case XID6_MUTED_VOICES:
-	case XID6_LOOP_COUNT:
-		type = XID6_TYPE_LENGTH;
-		return true;
-
-	case XID6_SONG_NAME:
-	case XID6_GAME_NAME:
-	case XID6_ARTIST_NAME:
-	case XID6_DUMPER_NAME:
-	case XID6_COMMENT:
-	case XID6_OST_TITLE:
-	case XID6_PUBLISHER_NAME:
-		type = XID6_TYPE_STRING;
-		return true;
-
-	case XID6_DUMPED_DATE:
-	case XID6_INTRO_LENGTH:
-	case XID6_LOOP_LENGTH:
-	case XID6_END_LENGTH:
-	case XID6_FADE_LENGTH:
-	case XID6_VOLUME:
-		type = XID6_TYPE_INTEGER;
-		return true;
-	}
-
-	return false;
-}
-#endif
-
 bool SPCFile::ParseDateString(const std::string & str, int & year, int & month, int & day)
 {
 	int n1, n2, n3;
