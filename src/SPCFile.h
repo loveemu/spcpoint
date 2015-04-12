@@ -88,8 +88,8 @@ public:
 
 	static uint32_t XID6TicksToMilliSeconds(uint32_t ticks);
 	static uint32_t MilliSecondsToXID6Ticks(uint32_t msecs);
-	static std::string SPCFile::XID6TicksToTimeString(uint32_t ticks, bool padding);
-	static uint32_t SPCFile::TimeStringToXID6Ticks(const std::string & str, bool * p_valid_format);
+	static std::string XID6TicksToTimeString(uint32_t ticks, bool padding);
+	static uint32_t TimeStringToXID6Ticks(const std::string & str, bool * p_valid_format);
 
 	static std::string ID666IdToEmulatorName(ID666EmulatorId id);
 	static ID666EmulatorId EmulatorNameToID666Id(const char * name);

@@ -1112,10 +1112,9 @@ std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) c
 				}
 
 				case XID6_EMULATOR:
-				{
 					sprintf(s, "%d", GetIntegerTag(id));
 					psf_tags["emulator"] = s;
-				}
+					break;
 
 				case XID6_OST_TITLE:
 					psf_tags["soundtrack"] = GetStringTag(id);
@@ -1127,6 +1126,7 @@ std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) c
 					break;
 
 				case XID6_OST_TRACK_NUMBER:
+				{
 					uint16_t num = GetIntegerTag(id);
 					uint8_t track = num >> 8;
 					uint8_t sym = num & 0xff;
@@ -1160,14 +1160,11 @@ std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) c
 				}
 
 				case XID6_MUTED_VOICES:
-				{
 					sprintf(s, "%d", GetIntegerTag(id));
 					psf_tags["mute"] = s;
 					break;
-				}
 
 				case XID6_LOOP_COUNT:
-				{
 					sprintf(s, "%d", GetIntegerTag(id));
 					psf_tags["loopcount"] = s;
 					break;

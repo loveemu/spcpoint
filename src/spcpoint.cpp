@@ -17,7 +17,7 @@
 #include "SPCFile.h"
 
 #define APP_NAME    "spcpoint"
-#define APP_VER     "[2015-04-09]"
+#define APP_VER     "[2015-04-12]"
 #define APP_URL     "http://github.com/loveemu/spcpoint"
 
 bool both_are_spaces(char lhs, char rhs)
@@ -88,22 +88,24 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	printf("-----replacing variables-----\n");
+	if (opt_tags.size() != 0) {
+		printf("-----replacing variables-----\n");
 
-	if (title_from_filename) {
-		printf("title=[from filename]\n");
-	}
-
-	for (auto itr = opt_tags.begin(); itr != opt_tags.end(); ++itr) {
-		const std::string & name = (*itr).first;
-		const std::string & value = (*itr).second;
-
-		if (!title_from_filename || name != "title") {
-			printf("%s=%s\n", name.c_str(), value.c_str());
+		if (title_from_filename) {
+			printf("title=[from filename]\n");
 		}
-	}
 
-	printf("-----------------------------\n");
+		for (auto itr = opt_tags.begin(); itr != opt_tags.end(); ++itr) {
+			const std::string & name = (*itr).first;
+			const std::string & value = (*itr).second;
+
+			if (!title_from_filename || name != "title") {
+				printf("%s=%s\n", name.c_str(), value.c_str());
+			}
+		}
+
+		printf("-----------------------------\n");
+	}
 
 	int num_errors = 0;
 	for (; argi < argc; argi++) {
@@ -143,21 +145,49 @@ int main(int argc, char *argv[])
 			psf_tags["title"] = title;
 		}
 
-		if (!spc->ImportPSFTag(psf_tags)) {
-			printf("%s: tag error\n", filename.c_str());
-			num_errors++;
-			delete spc;
-			continue;
+		if (psf_tags.size() != 0) {
+			if (!spc->ImportPSFTag(psf_tags)) {
+				printf("%s: tag error\n", filename.c_str());
+				num_errors++;
+				delete spc;
+				continue;
+			}
+
+			if (!spc->Save(filename)) {
+				printf("%s: save error\n", filename.c_str());
+				num_errors++;
+				delete spc;
+				continue;
+			}
+
+			printf("%s: ok\n", filename.c_str());
+		}
+		else {
+			// Put tag variables for SPC to SNSF tagging
+			std::map<std::string, std::string> current_tags = spc->ExportPSFTag(false);
+
+			printf("spcpoint");
+			for (auto itr = current_tags.begin(); itr != current_tags.end(); ++itr) {
+				const std::string & name = (*itr).first;
+				const std::string & value = (*itr).second;
+
+				if (name.find_first_of(" ") != std::string::npos || value.find_first_of(" ") != std::string::npos) {
+					printf(" \"-%s=%s\"", name.c_str(), value.c_str());
+				}
+				else {
+					printf(" -%s=%s", name.c_str(), value.c_str());
+				}
+			}
+
+			if (filename.find_first_of(" ") != std::string::npos) {
+				printf(" \"%s\"", filename.c_str());
+			}
+			else {
+				printf(" %s", filename.c_str());
+			}
+			printf("\n");
 		}
 
-		if (!spc->Save(filename)) {
-			printf("%s: save error\n", filename.c_str());
-			num_errors++;
-			delete spc;
-			continue;
-		}
-
-		printf("%s: ok\n", filename.c_str());
 		delete spc;
 	}
 
