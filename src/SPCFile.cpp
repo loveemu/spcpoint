@@ -72,6 +72,8 @@ bool SPCFile::IsSPCFile(const std::string& filename)
 
 SPCFile * SPCFile::Load(const std::string& filename)
 {
+	char * endptr;
+
 	off_t off_spc_size = path_getfilesize(filename.c_str());
 	if (off_spc_size == -1 || off_spc_size < SPC_MIN_SIZE) {
 		return NULL;
@@ -186,21 +188,34 @@ SPCFile * SPCFile::Load(const std::string& filename)
 				if (ParseDateString(s, year, month, day)) {
 					spc->SetIntegerTag(XID6_DUMPED_DATE, year * 10000 + month * 100 + day, 4);
 				}
+				else {
+					fprintf(stderr, "Warning: Unable to parse ID666 dumped date\n");
+				}
 			}
 
 			memcpy(s, &header[0xa9], 3);
 			s[3] = '\0';
 			if (strcmp(s, "") != 0) {
-				u = strtoul(s, NULL, 10);
-				spc->SetIntegerTag(XID6_INTRO_LENGTH, XID6TicksToMilliSeconds(u) / 1000, 4);
+				u = strtoul(s, &endptr, 10);
+				if (*endptr == '\0') {
+					spc->SetIntegerTag(XID6_INTRO_LENGTH, XID6TicksToMilliSeconds(u) / 1000, 4);
+				}
+				else {
+					fprintf(stderr, "Warning: Unable to parse ID666 playback length\n");
+				}
 			}
 
 			memcpy(s, &header[0xac], 5);
 			s[5] = '\0';
 			if (strcmp(s, "") != 0) {
-				u = strtoul(s, NULL, 10);
-				if (u != 0) {
-					spc->SetIntegerTag(XID6_FADE_LENGTH, u * XID6TicksToMilliSeconds(u), 4);
+				u = strtoul(s, &endptr, 10);
+				if (*endptr == '\0') {
+					if (u != 0) {
+						spc->SetIntegerTag(XID6_FADE_LENGTH, u * XID6TicksToMilliSeconds(u), 4);
+					}
+				}
+				else {
+					fprintf(stderr, "Warning: Unable to parse ID666 fade length\n");
 				}
 			}
 
@@ -213,8 +228,13 @@ SPCFile * SPCFile::Load(const std::string& filename)
 			memcpy(s, &header[0xd2], 1);
 			s[1] = '\0';
 			if (strcmp(s, "") != 0) {
-				u = strtoul(s, NULL, 10);
-				spc->SetIntegerTag(XID6_EMULATOR, u, 1);
+				u = strtoul(s, &endptr, 10);
+				if (*endptr == '\0') {
+					spc->SetIntegerTag(XID6_EMULATOR, u, 1);
+				}
+				else {
+					fprintf(stderr, "Warning: Unable to parse ID666 emulator id\n");
+				}
 			}
 		}
 	}
@@ -841,6 +861,7 @@ SPCFile::ID666EmulatorId SPCFile::EmulatorNameToID666Id(const char * name)
 
 bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 {
+	bool no_error = true;
 	char * endptr = NULL;
 
 	for (auto itr = psf_tags.begin(); itr != psf_tags.end(); ++itr) {
@@ -861,8 +882,14 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_COPYRIGHT_YEAR);
 			}
 			else {
-				long num = strtol(value.c_str(), NULL, 10);
-				SetLengthTag(XID6_COPYRIGHT_YEAR, (uint16_t)num);
+				long num = strtol(value.c_str(), &endptr, 10);
+				if (*endptr == '\0') {
+					SetLengthTag(XID6_COPYRIGHT_YEAR, (uint16_t)num);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: year\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "comment") {
@@ -879,9 +906,15 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_VOLUME);
 			}
 			else {
-				double num = strtod(value.c_str(), NULL);
-				uint32_t volume = (uint32_t)(num * 65536);
-				SetIntegerTag(XID6_VOLUME, volume, 4);
+				double num = strtod(value.c_str(), &endptr);
+				if (*endptr == '\0') {
+					uint32_t volume = (uint32_t)(num * 65536);
+					SetIntegerTag(XID6_VOLUME, volume, 4);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: volume\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "length") {
@@ -896,6 +929,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				if (valid_format) {
 					SetIntegerTag(XID6_INTRO_LENGTH, ticks, 4);
 				}
+				else {
+					fprintf(stderr, "Error: Illegal time format: length\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "fade") {
@@ -908,6 +945,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				uint32_t ticks = TimeStringToXID6Ticks(value, &valid_format);
 				if (valid_format) {
 					SetIntegerTag(XID6_FADE_LENGTH, ticks, 4);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal time format: fade\n");
+					no_error = false;
 				}
 			}
 		}
@@ -924,6 +965,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				if (ParseDateString(value, year, month, day)) {
 					SetIntegerTag(XID6_DUMPED_DATE, year * 10000 + month * 100 + day, 4);
 				}
+				else {
+					fprintf(stderr, "Error: Illegal date format: created_at\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "emulator") {
@@ -931,8 +976,14 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_EMULATOR);
 			}
 			else {
-				long num = strtol(value.c_str(), NULL, 10);
-				SetLengthTag(XID6_EMULATOR, (uint16_t)num);
+				long num = strtol(value.c_str(), &endptr, 10);
+				if (*endptr == '\0') {
+					SetLengthTag(XID6_EMULATOR, (uint16_t)num);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: emulator\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "soundtrack") {
@@ -943,9 +994,15 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_OST_DISC);
 			}
 			else {
-				long num = strtol(value.c_str(), NULL, 10);
-				uint32_t volume = (uint32_t)(num * 65536);
-				SetLengthTag(XID6_OST_DISC, (uint16_t)num);
+				long num = strtol(value.c_str(), &endptr, 10);
+				if (*endptr == '\0') {
+					uint32_t volume = (uint32_t)(num * 65536);
+					SetLengthTag(XID6_OST_DISC, (uint16_t)num);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: disc\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "track") {
@@ -953,11 +1010,17 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_OST_TRACK_NUMBER);
 			}
 			else {
-				long track = strtol(value.c_str(), &endptr, 10);
-				uint8_t sym = *endptr;
-
-				if (track >= 0 && track <= 255) {
-					SetLengthTag(XID6_OST_TRACK_NUMBER, (uint16_t)((track << 8) | sym));
+				const char * c_str = value.c_str();
+				long track = strtol(c_str, &endptr, 10);
+				if (endptr != c_str) {
+					uint8_t sym = *endptr;
+					if (track >= 0 && track <= 255) {
+						SetLengthTag(XID6_OST_TRACK_NUMBER, (uint16_t)((track << 8) | sym));
+					}
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: track\n");
+					no_error = false;
 				}
 			}
 		}
@@ -971,6 +1034,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				if (valid_format) {
 					SetIntegerTag(XID6_INTRO_LENGTH, ticks, 4);
 				}
+				else {
+					fprintf(stderr, "Error: Illegal time format: intro\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "loop") {
@@ -982,6 +1049,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				uint32_t ticks = TimeStringToXID6Ticks(value, &valid_format);
 				if (valid_format) {
 					SetIntegerTag(XID6_LOOP_LENGTH, ticks, 4);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal time format: loop\n");
+					no_error = false;
 				}
 			}
 		}
@@ -995,6 +1066,10 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				if (valid_format) {
 					SetIntegerTag(XID6_END_LENGTH, ticks, 4);
 				}
+				else {
+					fprintf(stderr, "Error: Illegal time format: end\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "mute") {
@@ -1002,8 +1077,14 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_MUTED_VOICES);
 			}
 			else {
-				long num = strtol(value.c_str(), NULL, 10);
-				SetLengthTag(XID6_MUTED_VOICES, (uint16_t)num);
+				long num = strtol(value.c_str(), &endptr, 10);
+				if (*endptr == '\0') {
+					SetLengthTag(XID6_MUTED_VOICES, (uint16_t)num);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: mute\n");
+					no_error = false;
+				}
 			}
 		}
 		else if (name == "loopcount") {
@@ -1011,12 +1092,21 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				tags.erase(XID6_LOOP_COUNT);
 			}
 			else {
-				long num = strtol(value.c_str(), NULL, 10);
-				SetLengthTag(XID6_LOOP_COUNT, (uint16_t)num);
+				long num = strtol(value.c_str(), &endptr, 10);
+				if (*endptr == '\0') {
+					SetLengthTag(XID6_LOOP_COUNT, (uint16_t)num);
+				}
+				else {
+					fprintf(stderr, "Error: Illegal number format: loopcount\n");
+					no_error = false;
+				}
 			}
 		}
+		else {
+			fprintf(stderr, "Warning: \"%s\" tag is ignored\n", name.c_str());
+		}
 	}
-	return true;
+	return no_error;
 }
 
 std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) const
