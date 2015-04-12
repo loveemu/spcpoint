@@ -839,7 +839,7 @@ SPCFile::ID666EmulatorId SPCFile::EmulatorNameToID666Id(const char * name)
 	}
 }
 
-void SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
+bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 {
 	char * endptr = NULL;
 
@@ -1016,6 +1016,7 @@ void SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 			}
 		}
 	}
+	return true;
 }
 
 std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) const

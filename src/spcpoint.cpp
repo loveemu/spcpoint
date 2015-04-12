@@ -88,32 +88,37 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	printf("-----replacing variables-----\n");
+
+	if (title_from_filename) {
+		printf("title=[from filename]\n");
+	}
+
+	for (auto itr = opt_tags.begin(); itr != opt_tags.end(); ++itr) {
+		const std::string & name = (*itr).first;
+		const std::string & value = (*itr).second;
+
+		if (!title_from_filename || name != "title") {
+			printf("%s=%s\n", name.c_str(), value.c_str());
+		}
+	}
+
+	printf("-----------------------------\n");
+
 	int num_errors = 0;
 	for (; argi < argc; argi++) {
-		SPCFile * spc = SPCFile::Load(argv[argi]);
+		std::string filename(argv[argi]);
+
+		SPCFile * spc = SPCFile::Load(filename);
 		if (spc == NULL) {
+			printf("%s: load error\n", filename.c_str());
+			num_errors++;
 			continue;
 		}
 
-#ifdef _DEBUG
-		printf("Current tags:\n");
-		printf("\n");
-		printf("```\n");
-
-		std::map<std::string, std::string> tags = spc->ExportPSFTag(true);
-		for (auto itr = tags.begin(); itr != tags.end(); ++itr) {
-			const std::string & name = (*itr).first;
-			const std::string & value = (*itr).second;
-			printf("%s=%s\n", name.c_str(), value.c_str());
-		}
-
-		printf("```\n");
-		printf("\n");
-#endif
-
 		std::map<std::string, std::string> psf_tags(opt_tags);
 		if (title_from_filename) {
-			std::string title(argv[argi]);
+			std::string title(filename);
 
 			// remove extension
 			std::string::size_type offset_dot = title.find_last_of('.');
@@ -136,14 +141,25 @@ int main(int argc, char *argv[])
 			title.erase(new_end, title.end());
 
 			psf_tags["title"] = title;
-			puts(title.c_str());
 		}
 
-		spc->ImportPSFTag(psf_tags);
-		spc->Save(argv[argi]);
+		if (!spc->ImportPSFTag(psf_tags)) {
+			printf("%s: tag error\n", filename.c_str());
+			num_errors++;
+			delete spc;
+			continue;
+		}
 
+		if (!spc->Save(filename)) {
+			printf("%s: save error\n", filename.c_str());
+			num_errors++;
+			delete spc;
+			continue;
+		}
+
+		printf("%s: ok\n", filename.c_str());
 		delete spc;
 	}
 
-	return EXIT_SUCCESS;
+	return (num_errors == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

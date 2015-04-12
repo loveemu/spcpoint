@@ -94,7 +94,7 @@ public:
 	static std::string ID666IdToEmulatorName(ID666EmulatorId id);
 	static ID666EmulatorId EmulatorNameToID666Id(const char * name);
 
-	void ImportPSFTag(const std::map<std::string, std::string> & psf_tags);
+	bool ImportPSFTag(const std::map<std::string, std::string> & psf_tags);
 	std::map<std::string, std::string> ExportPSFTag(bool unofficial_tags) const;
 
 private:
