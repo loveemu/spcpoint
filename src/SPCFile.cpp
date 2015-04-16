@@ -150,6 +150,7 @@ SPCFile * SPCFile::Load(const std::string& filename)
 		s[32] = '\0';
 		spc->SetStringTag(XID6_COMMENT, s);
 
+		bool has_id666_song_length = false;
 		if (header[0xd2] < 0x30) {
 			// binary format
 			u = header[0x9e] | (header[0x9f] << 8) | (header[0xa0] << 16) | (header[0xa1] << 24);
@@ -160,10 +161,11 @@ SPCFile * SPCFile::Load(const std::string& filename)
 			u = header[0xa9] | (header[0xaa] << 8) | (header[0xab] << 16);
 			if (u != 0) {
 				spc->SetIntegerTag(XID6_INTRO_LENGTH, XID6TicksToMilliSeconds(u) / 1000, 4);
+				has_id666_song_length = true;
 			}
 
 			u = header[0xac] | (header[0xad] << 8) | (header[0xae] << 16) | (header[0xaf] << 24);
-			if (u != 0) {
+			if (has_id666_song_length || u != 0) {
 				spc->SetIntegerTag(XID6_FADE_LENGTH, XID6TicksToMilliSeconds(u), 4);
 			}
 
@@ -210,9 +212,7 @@ SPCFile * SPCFile::Load(const std::string& filename)
 			if (strcmp(s, "") != 0) {
 				u = strtoul(s, &endptr, 10);
 				if (*endptr == '\0') {
-					if (u != 0) {
-						spc->SetIntegerTag(XID6_FADE_LENGTH, u * XID6TicksToMilliSeconds(u), 4);
-					}
+					spc->SetIntegerTag(XID6_FADE_LENGTH, u * XID6TicksToMilliSeconds(u), 4);
 				}
 				else {
 					fprintf(stderr, "Warning: Unable to parse ID666 fade length\n");

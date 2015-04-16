@@ -17,7 +17,7 @@
 #include "SPCFile.h"
 
 #define APP_NAME    "spcpoint"
-#define APP_VER     "[2015-04-12]"
+#define APP_VER     "[2015-04-16]"
 #define APP_URL     "http://github.com/loveemu/spcpoint"
 
 bool both_are_spaces(char lhs, char rhs)
