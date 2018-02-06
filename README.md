@@ -1,5 +1,6 @@
 SPCPoint
 ========
+[![Travis Build Status](https://travis-ci.org/loveemu/spcpoint.svg?branch=master)](https://travis-ci.org/loveemu/spcpoint) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/19v8biaxryhcbl28/branch/master?svg=true)](https://ci.appveyor.com/project/loveemu/spcpoint/branch/master)
 
 [SPCPoint](https://github.com/loveemu/spcpoint) is a simple command-line SPC tagger.
 
