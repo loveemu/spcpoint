@@ -30,9 +30,5 @@ set(SRCS
     src/SPCFile.cpp
     src/spcpoint.cpp
 )
-set(HDRS
-    src/SPCFile.h
-    src/cpath.h
-)
 
-add_executable(spcpoint ${SRCS} ${HDRS})
+add_executable(spcpoint ${SRCS})
