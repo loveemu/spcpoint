@@ -36,7 +36,7 @@ after_build:
   - ps: $env:gitrev = git describe --tags
   - ps: $env:my_version = "$env:gitrev"
   - set package_name=spcpoint-%my_version%-%arch%
-  - copy build\%config%\spcpoint.exe .
+  - copy "build\%config%\spcpoint.exe" .
   - 7z a %package_name%.zip spcpoint.exe README.md LICENSE
 
 artifacts:
